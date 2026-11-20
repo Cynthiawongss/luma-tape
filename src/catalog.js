@@ -51,7 +51,7 @@ export const allThemes=collections.flatMap(c=>c.items);
 // watercolour palette stays available as the "classic" look. IDs never change.
 export const pops=[['#2b50ff','#0a1a8c','#ff9bd6'],['#ff9ec7','#161616','#ffffff'],['#ffb347','#f0451a','#e9c9ff'],['#1f6b3a','#0b2a17','#f4ffb8'],['#f3f0e8','#e0312b','#2b50ff'],['#e8ff4f','#2b50ff','#ff4fa3'],['#c9b8ff','#3a1f8c','#fff06a'],['#a8e0ff','#0a3d8c','#ff6a3d'],['#161616','#ff4fa3','#e8ff4f'],['#ffd9e8','#d1123f','#ffffff']];
 const looks=['dreamy','stitch','symbol'];
-allThemes.forEach((t,i)=>{t.classicColors=t.colors;if(t.id==='blank'){t.look='classic';return;}t.look=looks[i%3];t.colors=pops[(i*3+Math.floor(i/3))%pops.length];});
+allThemes.forEach((t,i)=>{t.classicColors=t.colors;if(t.id==='blank'){t.look='classic';return;}t.look=looks[i%3];t.colors=pops[(i*7)%pops.length];});
 
 // Indices into the original 6×6 motif atlas; -1 means animated koi.
 export function motifFor(id){

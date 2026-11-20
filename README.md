@@ -1,68 +1,87 @@
 # Luma Tape
 
-一卷可以自由创作的电子手账胶带。支持带纸纤维的普通胶带与透明细闪两种质感，57 个主题、空白绘制、调色、手动旋转和 PNG 导出。
+English · [简体中文](README.zh-CN.md)
 
-[在线体验](https://washi-light-studio.tealanole.chatgpt.site/) · [源码仓库](https://github.com/Cynthiawongss/luma-tape)
+**Design your own washi tape in the browser. Pick a motif, restyle it as blur, cross-stitch or symbol art, and export a sticker for your digital journal.**
 
-## 运行
+[Open the studio](https://cynthiawongss.github.io/luma-tape/)
 
-需要 Node.js 20.19+（推荐 Node.js 22 LTS）和 npm。在仓库根目录执行：
+![Luma Tape studio showing a cross-stitch Saturn tape](docs/studio-stitch.jpg)
+
+## What you can make
+
+Every tape starts from one of 57 motifs and can be re-rendered in four print styles. The roll, the flat preview, the library covers and the exports all come from the same print, so what you see is what you download.
+
+| Blur | Symbol |
+| --- | --- |
+| ![Soft-focus, grainy print in cobalt and pink](docs/studio-blur.jpg) | ![Print typeset from rows of letters](docs/studio-symbol.jpg) |
+
+- **Blur**: soft focus and film grain, recoloured through your palette.
+- **Stitch**: outlined pixel cross-stitch on an even-weave grid, with small pixel charms.
+- **Symbol**: shapes typeset from rows of letters, with small technical marks.
+- **Classic**: the original watercolour illustrations.
+
+## Features
+
+- **57 motifs in six collections**: Places, Elements, MBTI, Zodiac, Planets and Florals, plus a blank roll.
+- **Two materials**: opaque washi paper with visible fibres, or clear film with glitter that sparkles as you turn the roll.
+- **Three colours per tape**: base, print and accent. *Match to base color* derives the other two for you, and *Shuffle* tries a new palette and style in one tap.
+- **Draw your own**: brush, eraser, 39 stickers, text and image upload, with undo and redo.
+- **My rolls**: save as many tapes as you like, rename them, delete them (with undo).
+- **Three exports**:
+  - Flat strip, 3072 × 512, for GoodNotes and other digital journals
+  - Transparent sticker, 2400 × 1400
+  - White showcase image, 2400 × 1600
+- **Keyboard friendly**: arrow keys turn the roll, Home resets the view, ⌘Z / ⇧⌘Z undo and redo.
+- **Shareable links**: `#/t/<motif id>` opens a motif directly.
+
+## Your data
+
+Everything stays in your browser. There is no account, no server and no cloud sync. Saved rolls live in `localStorage`, so export a PNG before you switch devices or clear site data.
+
+## Run it locally
+
+Requires Node.js 20.19 or newer.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-按终端显示的本地地址打开。检查与构建：
+Check and build:
 
 ```sh
 npm test
 npm run build
-npm run preview
 ```
 
-静态构建产物位于 `dist/`。默认以域名根路径运行；如需部署在子路径，可用 `npm run build -- --base=/luma-tape/`，或设置 `LUMA_TAPE_BASE`。素材 URL 跟随 Vite base。
+## Publish
 
-## 功能与数据（V7）
+The public site is served by GitHub Pages from the `gh-pages` branch. Pushing to `main` does not publish. To publish the current checkout:
 
-- 界面为当代平面设计风：细线网格、直角、衬线大标题配等宽小标注、电光蓝强调色，瀑布流封面，顶栏搜索。主题、分类、配色与界面文字均为英文（中文关键词仍可搜索）。
-- 6 个分类共 57 个预设，另有空白创作。主题 ID 不变，旧存档可直接打开。
-- 封面、平面预览、3D 卷筒和导出都由 `src/patterns.js` 的同一个 `drawPattern` 生成，不会互相对不上。图案分三层：底纹、均匀散布的小图、交错的大图；可调大小与疏密。
-- 四种印花风格（Print → Blur / Stitch / Symbol / Classic）：柔焦颗粒、像素十字绣、字符符号、原水彩。同一主题可随时切换；每个预设默认用一种新风格和一组高饱和配色，原水彩配色保留在 `classicColors`。旧存档没有 `look` 字段，按 Classic 打开。
-- 两种材质：Washi paper（不透明纸面，纤维与绒光）和 Glitter film（透明薄膜，图案与闪片嵌在膜内，锦鲤可游动）。
-- 三个颜色都作用在胶带上（底色、印花深色、点缀），可用 “Match to base color” 按 OKLCH 自动配色。
-- 整体撤销 / 重做（⌘Z / ⇧⌘Z）；方向键旋转卷筒，Home 复位；不自动旋转。
-- My rolls：多卷作品保存在浏览器 `luma-tape:works:v1`，可改名、删除（可撤销）。当前编辑状态自动写入 `luma-tape:studio:v1`，并兼容读取更早的存档键。没有账号、云同步或后端。
-- 画布：画笔、橡皮、39 张贴纸、文字、上传图片、撤销 / 重做。
-- Shuffle：一键换一组配色和印花风格。
-- 导出：平铺胶带 PNG（3072 × 512，最适合 GoodNotes 等电子手账）、透明底贴纸 PNG（2400 × 1400）与白底展示图（2400 × 1600）。纸胶带本体不透明。
-- 主题可用链接直达：`#/t/<主题 ID>`。
+```sh
+./scripts/deploy-pages.sh
+```
 
-## 代码结构
+## How it is built
+
+React 19, Vite and Three.js. No backend.
 
 ```text
 src/
-  main.jsx / App.jsx       网页入口
-  Studio.jsx               主界面、状态、撤销重做、存档、导出
-  Library.jsx              主题库（分类、搜索、瀑布流封面）
-  WorksDrawer.jsx          My rolls 作品抽屉
-  works.js / color.js      存档规范化与 OKLCH 配色（有测试）
-  sprites.js               图集加载
-  DrawingEditor.jsx        自定义图案画布
-  waterScene.js            Three.js 材质、预览、手动旋转与导出
-  waterGeometry.js         连续卷筒和展开曲面
-  tapeStyle.js             两种材质约束与旧存档迁移
-  catalog.js / patterns.js 主题和印花
-  assets.js                跟随部署路径的素材地址
-  *.css                    网页样式
-public/assets/             当前使用的图片素材
-tests/                     材质不透明度与几何连续性回归
+  Studio.jsx        main screen, state, undo/redo, saving, exports
+  Library.jsx       collections, search, masonry covers
+  DrawingEditor.jsx the drawing canvas
+  WorksDrawer.jsx   My rolls
+  patterns.js       the print: composition and the four styles
+  waterScene.js     Three.js roll, materials, export rendering
+  waterGeometry.js  the continuous roll-and-tail surface
+  catalog.js        motifs, collections, palettes
+  works.js          save format and migration (tested)
+  color.js          OKLCH palette derivation (tested)
+tests/              save format, colour, material and geometry checks
 ```
 
-## 维护与发布
+## Scope
 
-**本仓库是 Luma Tape 后续开发的唯一源码仓库。** 最新导入包含已发布的 V6 纸面与色彩优化，以及独立运行、子路径素材支持和模块存档键。
-
-源码提交与网站发布是两件事。当前公开站点继续运行原部署；本仓库尚未配置自动部署。仅推送 GitHub 不会自动改变线上版本，网站发布需另走部署流程。
-
-不提交 `node_modules/`、`dist/`、密钥、浏览器存档、个人截图或部署凭据。未来若被其他项目采用，通过单独的集成任务同步；本仓库日常更新不自动修改其他仓库。
+Luma Tape is a design tool, not a print shop: it exports images and does not order physical tape. The four styles re-render one set of 39 illustrations, so the motifs are shared across styles. Fonts load from Google Fonts and fall back to system fonts offline.
