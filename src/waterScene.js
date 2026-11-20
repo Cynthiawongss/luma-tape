@@ -13,8 +13,9 @@ function studioEnvironment(renderer){
  const pmrem=new THREE.PMREMGenerator(renderer),target=pmrem.fromScene(env,.01);pmrem.dispose();env.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});return target;
 }
 const common=`
-uniform float waterClock,waterStrength,glitterStrength,filmMode,opaquePaper,colorStrength;uniform sampler2D printedPattern;uniform vec3 foilTint,foilDeep,glitterTint;
+uniform float waterClock,waterStrength,glitterStrength,filmMode,opaquePaper,colorStrength,printMix;uniform sampler2D printedPattern,fishImage;uniform float koiTip,koiOn,koiScale;uniform vec3 foilTint,foilDeep,glitterTint;
 varying vec2 foilUv;varying vec3 foilTangent;
+float rnd1(float x){return fract(sin(x*127.1)*43758.5453);}
 float rnd(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 vec2 hash2(vec2 p){return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);}
 float noise2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(rnd(i),rnd(i+vec2(1.,0.)),f.x),mix(rnd(i+vec2(0.,1.)),rnd(i+1.),f.x),f.y);}
@@ -40,7 +41,7 @@ float waterFocus(vec2 p){
 }
 `;
 function filmMaterial(uniforms){
- const m=new THREE.MeshPhysicalMaterial({color:0xffffff,metalness:0,roughness:.007,transmission:1,thickness:.012,ior:1.46,attenuationColor:'#a6e3ec',attenuationDistance:.2,clearcoat:.65,clearcoatRoughness:.018,envMapIntensity:1.0,side:THREE.FrontSide,iridescence:.025});
+ const m=new THREE.MeshPhysicalMaterial({color:0xffffff,metalness:0,roughness:.007,transmission:1,thickness:.012,ior:1.46,attenuationColor:'#a6e3ec',attenuationDistance:.2,clearcoat:.65,clearcoatRoughness:.018,envMapIntensity:1.0,side:THREE.FrontSide,iridescence:.025,sheen:.45,sheenRoughness:.8,sheenColor:new THREE.Color('#fff6ea')});
  m.onBeforeCompile=shader=>{
   Object.assign(shader.uniforms,uniforms);
   shader.vertexShader='attribute vec3 tapeTangent;varying vec2 foilUv;varying vec3 foilTangent;\n'+shader.vertexShader;
@@ -80,13 +81,30 @@ function filmMaterial(uniforms){
    float focus=filmMode<.5?waterFocus(p*2.25):0.;
    float depth=noise2(p*2.8+vec2(waterClock*.035,-waterClock*.017));
    // A transparent ink wash, with broad soft variations rather than opaque gray shading.
-   float ink=.21+waterStrength*(.07+.16*depth);
+   float ink=.22+colorStrength*.40+waterStrength*(.05+.14*depth);
    if(filmMode>4.5)ink+=sin(p.y*32.+sin(p.x*1.4)*2.)*.025*waterStrength;
    if(filmMode>3.5&&filmMode<4.5)ink+=sin(p.x*3.+sin(p.y*3.+waterClock*.1))*.05*waterStrength;
    vec3 dye=mix(foilTint,foilDeep,waterStrength*depth*.12);
    vec3 waterInk=mix(vec3(1.),dye,ink);
    if(opaquePaper<.5){outgoingLight*=waterInk;
-   outgoingLight=mix(outgoingLight,vec3(1.),focus*waterStrength*.5);}
+   outgoingLight=mix(outgoingLight,vec3(1.),focus*waterStrength*.5);
+   // The static print sits inside the film with soft edges; only the koi swim on their own layer.
+   if(printMix>.5){vec4 pr=texture2D(printedPattern,vec2((foilUv.x+6.)/12.8,1.-foilUv.y));outgoingLight=mix(outgoingLight,pr.rgb,pr.a*.94);diffuseColor.a=max(diffuseColor.a,pr.a*.96);}
+   // Koi swim inside the film: same printed plane, only their position follows the clock.
+   if(koiOn>.5){vec4 best=vec4(0.);
+    for(int i=0;i<14;i++){
+     float fi=float(i),seed=rnd1(fi+5.),dir=seed>.5?1.:-1.;
+     float phase=waterClock*(.085+rnd1(fi+8.)*.035)+fi*2.6;
+     float cx=-5.7+fi*.92+rnd1(fi+11.)*.12+sin(phase)*.12*dir;
+     if(cx>koiTip-.42)continue;float cy=.30+mod(fi,3.)*.44+(rnd1(fi+21.)-.5)*.12+sin(phase*.8+fi)*.025;
+     float turn=(dir<0.?3.141593:0.)+(rnd1(fi+17.)-.5)*1.7+sin(phase*.8+fi)*.065;
+     float size=(.62+rnd1(fi+29.)*.22)*koiScale;
+     vec2 q=p-vec2(cx,cy);q=mat2(cos(turn),-sin(turn),sin(turn),cos(turn))*q;q/=vec2(size,size*.5);
+     float tail=pow(clamp((.28-q.x)/.78,0.,1.),2.);
+     q.y+=sin(q.x*7.-waterClock*(1.7+rnd1(fi+7.)*.6)+fi)*.055*tail;q+=.5;
+     if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.){vec4 c=texture2D(fishImage,q);if(c.a>best.a)best=c;}
+    }
+    float ka=smoothstep(.3,.7,best.a);outgoingLight=mix(outgoingLight,best.rgb,ka*.97);diffuseColor.a=max(diffuseColor.a,ka);}}
    if(opaquePaper>.5){
     // Keep pigment rich under soft studio lighting without flattening the roll shading.
     outgoingLight=mix(outgoingLight,diffuseColor.rgb,.20);
@@ -115,32 +133,6 @@ function filmMaterial(uniforms){
   `);
  };return m;
 }
-function motifMaterial(texture,clock){
- return new THREE.ShaderMaterial({uniforms:{fishImage:{value:texture},clock,tip:{value:4.5},motifKind:{value:0},patternImage:{value:null}},vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`
- uniform sampler2D fishImage,patternImage;uniform float clock,tip,motifKind;varying vec2 vUv;
- float rnd(float x){return fract(sin(x*127.1)*43758.5453);}
- void main(){
- if(motifKind>.5){vec4 ink=texture2D(patternImage,vec2((vUv.x+6.)/12.8,1.-vUv.y));if(ink.a<.18)discard;gl_FragColor=vec4(ink.rgb,1.);
- #include <colorspace_fragment>
- return;}
- vec4 best=vec4(0.);vec2 p=vec2(vUv.x,vUv.y*1.52);
- for(int i=0;i<14;i++){
-  float fi=float(i),seed=rnd(fi+5.),dir=seed>.5?1.:-1.;
-  float phase=clock*(.085+rnd(fi+8.)*.035)+fi*2.6;
-  float cx=-5.7+fi*.92+rnd(fi+11.)*.12+sin(phase)*.12*dir;
-  if(cx>tip-.36)continue;float cy=.30+mod(fi,3.)*.44+(rnd(fi+21.)-.5)*.12+sin(phase*.8+fi)*.025;
-  float angle=(dir<0.?3.141593:0.)+(rnd(fi+17.)-.5)*1.7+sin(phase*.8+fi)*.065;
-  float size=.51+rnd(fi+29.)*.19;
-  vec2 q=p-vec2(cx,cy);q=mat2(cos(angle),-sin(angle),sin(angle),cos(angle))*q;q/=vec2(size,size*.5);
-  float tail=pow(clamp((.28-q.x)/.78,0.,1.),2.);
-  q.y+=sin(q.x*7.-clock*(1.7+rnd(fi+7.)*.6)+fi)*.055*tail;q+=.5;
-  if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.){vec4 c=texture2D(fishImage,q);if(c.a>best.a)best=c;}
- }
- if(best.a<.28)discard;gl_FragColor=vec4(best.rgb,1.);
- #include <colorspace_fragment>
- }`,side:THREE.DoubleSide,depthWrite:true});
-}
-
 export function createWaterScene(host,getConfig,onReady,onError){
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setClearColor(0xffffff,1);renderer.toneMapping=THREE.NoToneMapping;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;host.appendChild(renderer.domElement);
  const scene=new THREE.Scene();scene.background=new THREE.Color('white');const environment=studioEnvironment(renderer);scene.environment=environment.texture;
@@ -148,10 +140,13 @@ export function createWaterScene(host,getConfig,onReady,onError){
  const group=new THREE.Group();scene.add(group);scene.add(new THREE.HemisphereLight(0xffffff,0xf0ece4,.72));
  const key=new THREE.DirectionalLight(0xffffff,.9);key.position.set(-3,8,3);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-6;key.shadow.camera.right=6;key.shadow.camera.top=5;key.shadow.camera.bottom=-5;key.shadow.normalBias=.01;key.shadow.bias=-.0003;scene.add(key);
  const fill=new THREE.DirectionalLight(0xffffff,.5);fill.position.set(5,2,-4);scene.add(fill);
- const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.ShadowMaterial({opacity:.055}));ground.rotation.x=-Math.PI/2;ground.position.y=-.007;ground.receiveShadow=true;scene.add(ground);
- const clock={value:0},uniforms={waterClock:clock,waterStrength:{value:.6},glitterStrength:{value:.8},foilTint:{value:new THREE.Color('#8bc8d3')},foilDeep:{value:new THREE.Color('#367f91')},glitterTint:{value:new THREE.Color('#fff1c6')},filmMode:{value:0},opaquePaper:{value:0},colorStrength:{value:.35},printedPattern:{value:null}};
+ const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.ShadowMaterial({opacity:.10}));ground.rotation.x=-Math.PI/2;ground.position.y=-.007;ground.receiveShadow=true;scene.add(ground);
+ const clock={value:0},uniforms={waterClock:clock,waterStrength:{value:.6},glitterStrength:{value:.8},foilTint:{value:new THREE.Color('#8bc8d3')},foilDeep:{value:new THREE.Color('#367f91')},glitterTint:{value:new THREE.Color('#fff1c6')},filmMode:{value:0},opaquePaper:{value:0},colorStrength:{value:.35},printMix:{value:1},fishImage:{value:null},koiTip:{value:4.5},koiOn:{value:0},koiScale:{value:1},printedPattern:{value:null}};
  const film=filmMaterial(uniforms);let surface=tapeSurface();const strip=new THREE.Mesh(ribbonGeometry(surface),film);group.add(strip);
  const rollGroup=new THREE.Group();group.add(rollGroup);
+ // Soft contact shadow under the roll: a blurred blob, strongest where the roll touches the table.
+ const blob=document.createElement('canvas');blob.width=blob.height=128;const bctx=blob.getContext('2d'),bg=bctx.createRadialGradient(64,64,4,64,64,62);bg.addColorStop(0,'rgba(30,34,44,.42)');bg.addColorStop(.45,'rgba(30,34,44,.16)');bg.addColorStop(1,'rgba(30,34,44,0)');bctx.fillStyle=bg;bctx.fillRect(0,0,128,128);
+ const contact=new THREE.Mesh(new THREE.PlaneGeometry(2.5,2.3),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(blob),transparent:true,depthWrite:false}));contact.rotation.x=-Math.PI/2;contact.position.set(ROLL_X+.05,.002,0);contact.renderOrder=-1;rollGroup.add(contact);
  const paper=new THREE.MeshStandardMaterial({color:0xe6e5df,roughness:.72,envMapIntensity:.18,side:THREE.DoubleSide});
  const core=new THREE.Mesh(new THREE.CylinderGeometry(.665,.665,WIDTH-.012,128,1,true),paper);core.rotation.x=Math.PI/2;core.position.set(ROLL_X,ROLL_Y,0);rollGroup.add(core);core.castShadow=true;
  const paperOuter=new THREE.Mesh(new THREE.CylinderGeometry(.707,.707,WIDTH-.012,128,1,true),paper);paperOuter.rotation.x=Math.PI/2;paperOuter.position.copy(core.position);rollGroup.add(paperOuter);
@@ -164,38 +159,39 @@ export function createWaterScene(host,getConfig,onReady,onError){
  }
  const edgeMat=new THREE.MeshBasicMaterial({color:'#9dd9e4',transparent:true,opacity:.48});
  const edges=[new THREE.Mesh(new THREE.BufferGeometry(),edgeMat),new THREE.Mesh(new THREE.BufferGeometry(),edgeMat)];edges.forEach(e=>group.add(e));
- let fishTexture,atlasTexture,fishMat,fish,patternTexture,pattern,patternKey='',artSource='',artImage=null,disposed=false,assetsLoaded=0;
- const loaded=()=>{if(disposed)return;if(++assetsLoaded===2){fishMat=motifMaterial(fishTexture,clock);fish=new THREE.Mesh(ribbonGeometry(surface,{depth:0,offset:-.002,closed:false}),fishMat);group.add(fish);onReady?.();}};
+ let assetsReady=false,fishTexture,atlasTexture,patternTexture,pattern,patternKey='',artSource='',artImage=null,disposed=false,assetsLoaded=0;
+ const loaded=()=>{if(disposed)return;if(++assetsLoaded===2){assetsReady=true;uniforms.fishImage.value=fishTexture;onReady?.();}};
  const loadAsset=url=>new THREE.TextureLoader().load(url,t=>{if(disposed){t.dispose();return;}t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),8);loaded();},undefined,()=>onError?.('主题素材加载失败，请刷新页面。'));
  fishTexture=loadAsset(assetUrl('koi.png'));atlasTexture=loadAsset(assetUrl('theme-atlas-v1.png'));
  const refreshPattern=c=>{
-  if(!fishMat)return;
+  if(!assetsReady)return;
   if((c.art||'')!==artSource){artSource=c.art||'';artImage=null;if(artSource){const requested=artSource,im=new Image();im.onload=()=>{if(!disposed&&requested===artSource){artImage=im;patternKey='';}};im.src=artSource;}}
-  const next=(c.theme||'stream')+'|'+artSource+'|'+!!artImage;
-  if(next!==patternKey){patternKey=next;pattern=makePattern(atlasTexture.image,fishTexture.image,c,artImage);patternTexture?.dispose();patternTexture=new THREE.CanvasTexture(pattern.canvas);patternTexture.colorSpace=THREE.SRGBColorSpace;patternTexture.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),16);fishMat.uniforms.patternImage.value=patternTexture;uniforms.printedPattern.value=patternTexture;}
-  fishMat.uniforms.motifKind.value=motifFor(c.theme||'stream')[0]===-1&&!c.art?0:1;
+  const animatedKoi=c.style!=='paper'&&!c.art&&(c.patternLook||'classic')==='classic'&&motifFor(c.theme||'stream').includes(-1);
+  const next=[c.theme||'stream',artSource.length+artSource.slice(-32),!!artImage,(c.colors||[]).join(),c.patternScale,c.patternFill,c.patternLook,animatedKoi].join('|');
+  if(next!==patternKey){patternKey=next;pattern=makePattern(atlasTexture.image,fishTexture.image,{...c,skipKoi:animatedKoi},artImage);patternTexture?.dispose();patternTexture=new THREE.CanvasTexture(pattern.canvas);patternTexture.colorSpace=THREE.SRGBColorSpace;patternTexture.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),16);uniforms.printedPattern.value=patternTexture;}
+  uniforms.koiOn.value=animatedKoi?1:0;
  };
  const probe=new THREE.Group();scene.add(probe);for(let i=0;i<5;i++){const bar=new THREE.Mesh(new THREE.BoxGeometry(.035,.008,2.1),new THREE.MeshBasicMaterial({color:i%2?0xd5dddd:0x536775}));bar.position.set(-.8+i*.5,.012,0);probe.add(bar);}probe.visible=false;
  let lastKey='',angle=0,targetAngle=0,tilt=0,targetTilt=0,lastTime=performance.now(),raf,fit=1,dragging=null;
- const rebuild=c=>{surface=tapeSurface(c.extension,c.view!=='roll');strip.geometry.dispose();strip.geometry=ribbonGeometry(surface);if(fish){fish.geometry.dispose();fish.geometry=ribbonGeometry(surface,{depth:0,offset:-.002,closed:false});}edges.forEach((e,k)=>{const pts=Array.from({length:441},(_,i)=>surfacePoint(surface,-surface.arcLength+i/440*surface.length,k,.002).p);e.geometry.dispose();e.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),440,.0018,4,false);});};
- const resize=()=>{const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;fit=Math.min(1,camera.aspect/1.5);camera.updateProjectionMatrix();};const observer=new ResizeObserver(resize);observer.observe(host);resize();
+ const rebuild=c=>{surface=tapeSurface(c.extension,c.view!=='roll');strip.geometry.dispose();strip.geometry=ribbonGeometry(surface);edges.forEach((e,k)=>{const pts=Array.from({length:441},(_,i)=>surfacePoint(surface,-surface.arcLength+i/440*surface.length,k,.002).p);e.geometry.dispose();e.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),440,.0018,4,false);});};
+ const resize=()=>{const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;fit=Math.min(1.22,camera.aspect/1.62);camera.updateProjectionMatrix();};const observer=new ResizeObserver(resize);observer.observe(host);resize();
  const down=e=>{dragging={x:e.clientX,y:e.clientY,a:targetAngle,t:targetTilt};host.setPointerCapture(e.pointerId);};
  const move=e=>{if(!dragging)return;targetAngle=THREE.MathUtils.clamp(dragging.a+(e.clientX-dragging.x)*.006,-1.3,1.3);targetTilt=THREE.MathUtils.clamp(dragging.t+(e.clientY-dragging.y)*.0025,-.23,.23);};
  const up=()=>dragging=null;host.addEventListener('pointerdown',down);host.addEventListener('pointermove',move);host.addEventListener('pointerup',up);host.addEventListener('pointercancel',up);
  function frame(){const now=performance.now(),dt=Math.min(.25,(now-lastTime)/1000);lastTime=now;const c=getConfig();if(c.motion)clock.value+=dt;refreshPattern(c);
-  const key=c.extension+'|'+c.view+'|'+!!fish;if(key!==lastKey){lastKey=key;rebuild(c);}
+  const key=c.extension+'|'+c.view+'|'+assetsReady;if(key!==lastKey){lastKey=key;rebuild(c);}
   const tint=new THREE.Color(c.colors?.[0]||c.color),lightTint=tint.clone();
   uniforms.foilTint.value.copy(lightTint);uniforms.waterStrength.value=c.ripple;uniforms.opaquePaper.value=c.style==='paper'?1:0;uniforms.colorStrength.value=c.density;uniforms.glitterStrength.value=c.glitter;uniforms.foilDeep.value.set(c.colors?.[1]||c.color);uniforms.glitterTint.value.set(c.colors?.[2]||'#fff1c6');uniforms.filmMode.value=['water','garden','cosmic','mineral','ember','sand','blank'].indexOf(c.mode||'water');
   film.attenuationColor.copy(lightTint);film.color.set('white');film.attenuationDistance=.18;
   const materialState=tapeMaterialSettings(c.style,c.density);for(const [key,value] of Object.entries(materialState))film[key]=value;
   ringMat.attenuationColor.copy(lightTint);ringMat.thickness=.05+c.density*.12;ringMat.transmission=c.style==='paper'?0:1;ringMat.roughness=c.style==='paper'?.98:.018;ringMat.envMapIntensity=c.style==='paper'?.08:1;ringMat.specularIntensity=c.style==='paper'?.12:1;ringMat.color.copy(c.style==='paper'?lightTint.clone().lerp(new THREE.Color('white'),(1.-c.density)*.12):new THREE.Color('white'));
   rims.forEach(r=>{r.material.color.copy(c.style==='paper'?tint:lightTint);r.material.opacity=c.style==='paper'?.22:.23;});edgeMat.color.copy(tint).lerp(new THREE.Color('white'),.3);
-  rollGroup.visible=c.view==='roll';probe.visible=c.view==='film';if(fish){fish.visible=c.view!=='film'&&c.style!=='paper';fishMat.uniforms.tip.value=surface.tailLength;}
+  rollGroup.visible=c.view==='roll';probe.visible=c.view==='film';uniforms.koiTip.value=surface.tailLength;uniforms.koiScale.value=c.patternScale||1;
   const ease=1.-Math.exp(-dt*12.);angle+=(targetAngle-angle)*ease;tilt+=(targetTilt-tilt)*ease;group.rotation.y=angle;group.rotation.x=tilt;group.scale.setScalar(1.32*fit*c.zoom);group.position.y=.03;
   renderer.render(scene,camera);host.dataset.angle=group.rotation.y.toFixed(3);host.dataset.glitter=String(c.glitter);host.dataset.motion=String(c.motion);host.dataset.material=c.style;host.dataset.transmission=String(film.transmission);host.dataset.opacity=String(film.opacity);raf=requestAnimationFrame(frame);
  }
  frame();
- return {reset(){targetAngle=0;targetTilt=0;},async exportSticker(){
+ return {reset(){targetAngle=0;targetTilt=0;},nudge(dx,dy){targetAngle=THREE.MathUtils.clamp(targetAngle+dx,-1.3,1.3);targetTilt=THREE.MathUtils.clamp(targetTilt+dy,-.23,.23);},async exportSticker(){
  const c=getConfig(),size=new THREE.Vector2();renderer.getSize(size);const ratio=renderer.getPixelRatio(),aspect=camera.aspect,oldBackground=scene.background;cancelAnimationFrame(raf);
  const alphaFilm=film.clone();alphaFilm.onBeforeCompile=film.onBeforeCompile;Object.assign(alphaFilm,tapeMaterialSettings(c.style,c.density,true));alphaFilm.color.set(c.style==='paper'?'white':c.colors?.[0]||c.color);
  strip.material=alphaFilm;scene.background=null;renderer.setClearColor(0,0);ground.visible=false;rollGroup.visible=false;probe.visible=false;rebuild({...c,view:'strip'});

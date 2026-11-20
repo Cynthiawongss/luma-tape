@@ -18,5 +18,7 @@ export function tapeMaterialSettings(style, density = .35, exporting = false) {
     specularIntensity: paper ? .12 : 1,
     iridescence: paper ? 0 : .025,
     thickness: paper ? .009 : .012 + amount * .075,
+    // A soft fuzz at grazing angles is what separates paper from plastic.
+    sheen: paper ? .45 : .0001,
   };
 }
