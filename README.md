@@ -6,9 +6,9 @@ English · [简体中文](README.zh-CN.md)
 
 [Open the studio →](https://cynthiawongss.com/luma-tape/)
 
-![Luma Tape — an editorial illustration of shell templates in blur and stitch, alongside a hand-drawn tape](docs/intro/cover.png)
+![Four strips of washi tape on white paper. Three print the same Pearl Coast shell motif in acid yellow, cobalt and pink as blur, cross-stitch and letter-built symbols; the fourth is a hand-drawn design of waves and shells from a blank roll.](docs/intro/cover.png)
 
-*Theme illustration. The studio and exported tape shown below are from the live app.*
+*Every strip above was printed by the studio's own code, the same print the roll and the exports use. The screenshots below are from the live app.*
 
 ## Two ways to make it yours
 
@@ -23,10 +23,27 @@ The flat preview, the roll and the exported image use the same print, so you can
 | Make it yours | What you can change |
 | --- | --- |
 | Start with a motif | 57 motifs across Places, Elements, MBTI, Zodiac, Planets and Florals, plus a blank roll. |
-| Try another print | **Blur** for soft focus and grain; **Stitch** for pixel cross-stitch; **Symbol** for letter-built shapes; **Classic** for the original watercolour artwork. |
+| Try another print | **Blur**, **Stitch**, **Symbol** or **Classic**: see below. |
 | Set the colours and material | Base, print and accent colours; opaque washi paper or clear glitter film. Match colours automatically, or Shuffle for a new combination. |
 | Add your own marks | Draw, erase, add text, use 39 stickers or upload an image. Undo and redo while you work. |
 | Keep a collection | Save designs in My rolls, rename them and return to them in the same browser. |
+
+## One motif, four ways to print it
+
+Luma Tape treats a tape as a print rather than a sticker sheet. Any motif can be printed four ways, and your three colours drive each of them.
+
+| Print | What it does |
+| --- | --- |
+| **Blur** | Soft focus and film grain. Every illustration is recoloured through your palette, so none keeps its original colours. |
+| **Stitch** | Pixel cross-stitch on an even-weave grid: flat thread colours, a dark outline and small pixel charms in the gaps. |
+| **Symbol** | Each shape is typeset from rows of letters that spell the tape's own name, with small technical marks around it. |
+| **Classic** | The original watercolour illustrations. |
+
+Blur, Stitch and Symbol borrow from contemporary graphic design: soft-focus grain, pixel cross-stitch, type-built symbols and saturated colour clashes, rather than the nostalgic watercolour look of most journal tape. Classic keeps that original artwork for anyone who wants it.
+
+![The live studio with Pearl Coast in the Symbol print: on the roll and in the flat print, each shell is built from the letters of PEARLCOAST](docs/intro/studio-symbol.png)
+
+What you see is what you export. The roll, the flat preview, the library covers and every PNG are drawn by the same print function, so they never disagree.
 
 ## Your colours, your take on a template
 
@@ -64,7 +81,7 @@ Arrow keys turn the roll, **Home** resets the view, and **⌘Z / ⇧⌘Z** undo 
 
 Saved rolls stay in this browser's `localStorage`. There is no account or cloud sync: export your work before clearing site data or moving to another device. Fonts load from Google Fonts, with system-font fallbacks when offline.
 
-Luma Tape makes digital images; it does not print or order physical tape. The four print styles reinterpret the same set of 39 base illustrations.
+Luma Tape makes digital images; it does not print or order physical tape. The four print styles redraw the same 37 illustrations (a sheet of 36 plus the koi), so motifs are shared across styles.
 
 ## Run locally
 

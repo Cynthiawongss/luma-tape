@@ -1,0 +1,12 @@
+{
+  "defaults": { "size": "1440x1000", "scale": 2, "lang": "en-US", "stillTimeout": 12000, "timeout": 120000 },
+  "shots": [
+    {
+      "url": "http://localhost:5191/",
+      "out": "../docs/intro/studio-symbol.png",
+      "setup": "localStorage.setItem('luma-tape:studio:v1', JSON.stringify({ theme: 'coast', colors: ['#e8ff4f', '#2b50ff', '#ff4fa3'], style: 'paper', look: 'symbol', density: 0.35, glitter: 0.85 }))",
+      "until": "document.querySelector('canvas') && document.fonts.status === 'loaded'",
+      "wait": 2500
+    }
+  ]
+}
