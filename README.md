@@ -2,95 +2,94 @@
 
 English · [简体中文](README.zh-CN.md)
 
-**Design your own washi tape in the browser. Pick a motif, restyle it as blur, cross-stitch or symbol art, and export a sticker for your digital journal.**
+**Design your own digital washi tape. Draw from scratch, or make an existing template yours with custom colours and print styles. Export a PNG for your journal, notes or next post.**
 
-[Open the studio](https://cynthiawongss.github.io/luma-tape/)
+[Open the studio →](https://cynthiawongss.com/luma-tape/)
 
-**Not open source.** This repository is public so you can look at the work. All rights are reserved: please do not copy, modify or reuse the code, the illustrations or the designs without permission. Tapes you make in the studio are yours to use. See [LICENSE](LICENSE).
+![Luma Tape — an editorial illustration of shell templates in blur and stitch, alongside a hand-drawn tape](docs/intro/cover.png)
 
-![Luma Tape studio showing a cross-stitch Saturn tape](docs/studio-stitch.jpg)
+*Theme illustration. The studio and exported tape shown below are from the live app.*
 
-## What you can make
+## Two ways to make it yours
 
-Every tape starts from one of 57 motifs and can be re-rendered in four print styles. The roll, the flat preview, the library covers and the exports all come from the same print, so what you see is what you download.
-
-| Blur | Symbol |
+| Design from scratch | Remix a template |
 | --- | --- |
-| ![Soft-focus, grainy print in cobalt and pink](docs/studio-blur.jpg) | ![Print typeset from rows of letters](docs/studio-symbol.jpg) |
+| Open **Blank roll** to draw, arrange stickers, add text or upload your own artwork. You choose what goes on the tape and where it goes. | Pick a template, change its **Base, Print and Accent** colours individually, then try another print style or material. |
 
-- **Blur**: soft focus and film grain, recoloured through your palette.
-- **Stitch**: outlined pixel cross-stitch on an even-weave grid, with small pixel charms.
-- **Symbol**: shapes typeset from rows of letters, with small technical marks.
-- **Classic**: the original watercolour illustrations.
+The flat preview, the roll and the exported image use the same print, so you can see your changes as you work.
 
-## Features
+![The live Luma Tape studio: a lime, pink and cobalt shell tape with editable base, print and accent colours](docs/intro/studio.png)
 
-- **57 motifs in six collections**: Places, Elements, MBTI, Zodiac, Planets and Florals, plus a blank roll.
-- **Two materials**: opaque washi paper with visible fibres, or clear film with glitter that sparkles as you turn the roll.
-- **Three colours per tape**: base, print and accent. *Match to base color* derives the other two for you, and *Shuffle* tries a new palette and style in one tap.
-- **Draw your own**: brush, eraser, 39 stickers, text and image upload, with undo and redo.
-- **My rolls**: save as many tapes as you like, rename them, delete them (with undo).
-- **Three exports**:
-  - Flat strip, 3072 × 512, for GoodNotes and other digital journals
-  - Transparent sticker, 2400 × 1400
-  - White showcase image, 2400 × 1600
-- **Keyboard friendly**: arrow keys turn the roll, Home resets the view, ⌘Z / ⇧⌘Z undo and redo.
-- **Shareable links**: `#/t/<motif id>` opens a motif directly.
+| Make it yours | What you can change |
+| --- | --- |
+| Start with a motif | 57 motifs across Places, Elements, MBTI, Zodiac, Planets and Florals, plus a blank roll. |
+| Try another print | **Blur** for soft focus and grain; **Stitch** for pixel cross-stitch; **Symbol** for letter-built shapes; **Classic** for the original watercolour artwork. |
+| Set the colours and material | Base, print and accent colours; opaque washi paper or clear glitter film. Match colours automatically, or Shuffle for a new combination. |
+| Add your own marks | Draw, erase, add text, use 39 stickers or upload an image. Undo and redo while you work. |
+| Keep a collection | Save designs in My rolls, rename them and return to them in the same browser. |
 
-## Your data
+## Your colours, your take on a template
 
-Everything stays in your browser. There is no account, no server and no cloud sync. Saved rolls live in `localStorage`, so export a PNG before you switch devices or clear site data.
+Shells and marine motifs can become a cross-stitch print in acid lime, pink and cobalt, or a soft, grainy blur. These two studio screenshots show the possibilities. All three colours are editable; you can go beyond the template's starting palette.
 
-## Run it locally
+![A marine template in cross-stitch, with an acid-lime base and pink-and-cobalt motifs](docs/intro/ocean-stitch.png)
 
-Requires Node.js 20.19 or newer.
+![A marine template in soft-focus blur, with pink shells on an acid-lime base](docs/intro/ocean-blur.png)
+
+## Start blank. Draw and arrange your own.
+
+Open **Blank roll** to create your own design. In this example, blue waves were drawn with the brush and three shell stickers were placed on the canvas. You can also add text or upload an image. Choose **Use on my tape** to apply your artwork to the roll.
+
+![The actual drawing editor, showing hand-drawn blue waves and freely arranged shells, with text and upload tools](docs/intro/design-your-own.png)
+
+[View the actual flat-strip export of this custom design](docs/intro/custom-coast-flat.png)
+
+## Take your design with you
+
+| Export | Size | Use it for |
+| --- | --- | --- |
+| Flat strip | 3072 × 512 PNG | Place a repeating strip in GoodNotes or another digital journal. |
+| Sticker, transparent | 2400 × 1400 PNG | Layer a cut strip over a page without a rectangular background. |
+| Showcase, white | 2400 × 1600 PNG | Share the whole roll at your chosen angle. |
+
+## Try it
+
+1. [Open Luma Tape](https://cynthiawongss.com/luma-tape/) and choose **Blank roll** to design from scratch, or pick a template from the left-hand library.
+2. Adjust the print, palette and material. Drag the roll to turn it; pull out more tape or cut a strip.
+3. Save it in **My rolls**, or choose a PNG from **Export**. No account is needed.
+
+Arrow keys turn the roll, **Home** resets the view, and **⌘Z / ⇧⌘Z** undo and redo.
+
+## Your work and your data
+
+Saved rolls stay in this browser's `localStorage`. There is no account or cloud sync: export your work before clearing site data or moving to another device. Fonts load from Google Fonts, with system-font fallbacks when offline.
+
+Luma Tape makes digital images; it does not print or order physical tape. The four print styles reinterpret the same set of 39 base illustrations.
+
+## Run locally
+
+Built with React 19, Vite and Three.js. Requires Node.js 20.19 or newer.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Check and build:
+To check and build:
 
 ```sh
 npm test
 npm run build
 ```
 
-## Publish
-
-Every push to `main` runs the tests, builds the site and publishes it to GitHub Pages (see `.github/workflows/pages.yml`). If the tests or the build fail, the live site stays on the previous version.
-
-## How it is built
-
-React 19, Vite and Three.js. No backend.
-
-```text
-src/
-  Studio.jsx        main screen, state, undo/redo, saving, exports
-  Library.jsx       collections, search, masonry covers
-  DrawingEditor.jsx the drawing canvas
-  WorksDrawer.jsx   My rolls
-  patterns.js       the print: composition and the four styles
-  waterScene.js     Three.js roll, materials, export rendering
-  waterGeometry.js  the continuous roll-and-tail surface
-  catalog.js        motifs, collections, palettes
-  works.js          save format and migration (tested)
-  color.js          OKLCH palette derivation (tested)
-tests/              save format, colour, material and geometry checks
-```
-
-## Scope
-
-Luma Tape is a design tool, not a print shop: it exports images and does not order physical tape. The four styles re-render one set of 39 illustrations, so the motifs are shared across styles. Fonts load from Google Fonts and fall back to system fonts offline.
+Pushes to `main` run the tests and build before publishing through GitHub Pages. If either fails, the previous live version remains available.
 
 ## Rights
 
-Copyright © 2026 Cynthiawongss. All rights reserved. This is not an open-source project.
+Copyright © 2026 Cynthiawongss. **All rights reserved. This is a public showcase, not an open-source project.**
 
-- You may read the code and fork the repository on GitHub as its Terms of Service allow.
-- You may not copy, modify, redistribute or sell the code, the illustrations, the print styles or the designs, or use them in another product, without written permission.
-- Tapes you design on the published site and the PNGs you export are yours to use in your own journals, notes and posts. Reselling the built-in illustrations as a sticker pack or stock asset is not allowed.
-- React, Three.js, Vite, Phosphor Icons and the Google Fonts typefaces stay under their own licenses.
+You may view the work and fork the repository as GitHub's Terms of Service allow. Reusing, modifying or redistributing the code, illustrations, print styles or designs requires written permission.
 
-The full notice is in [LICENSE](LICENSE). To ask for permission, open an issue.
+Tapes you design on the published site and the PNGs you export may be used in your own journals, notes and posts. Do not resell the built-in illustrations as sticker packs or stock assets. Third-party software and fonts retain their own licenses.
+
+See [LICENSE](LICENSE) for the full terms. To ask for permission, open an issue.
