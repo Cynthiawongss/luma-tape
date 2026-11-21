@@ -6,6 +6,8 @@ English · [简体中文](README.zh-CN.md)
 
 [Open the studio](https://cynthiawongss.github.io/luma-tape/)
 
+**Not open source.** This repository is public so you can look at the work. All rights are reserved: please do not copy, modify or reuse the code, the illustrations or the designs without permission. Tapes you make in the studio are yours to use. See [LICENSE](LICENSE).
+
 ![Luma Tape studio showing a cross-stitch Saturn tape](docs/studio-stitch.jpg)
 
 ## What you can make
@@ -81,3 +83,14 @@ tests/              save format, colour, material and geometry checks
 ## Scope
 
 Luma Tape is a design tool, not a print shop: it exports images and does not order physical tape. The four styles re-render one set of 39 illustrations, so the motifs are shared across styles. Fonts load from Google Fonts and fall back to system fonts offline.
+
+## Rights
+
+Copyright © 2026 Cynthiawongss. All rights reserved. This is not an open-source project.
+
+- You may read the code and fork the repository on GitHub as its Terms of Service allow.
+- You may not copy, modify, redistribute or sell the code, the illustrations, the print styles or the designs, or use them in another product, without written permission.
+- Tapes you design on the published site and the PNGs you export are yours to use in your own journals, notes and posts. Reselling the built-in illustrations as a sticker pack or stock asset is not allowed.
+- React, Three.js, Vite, Phosphor Icons and the Google Fonts typefaces stay under their own licenses.
+
+The full notice is in [LICENSE](LICENSE). To ask for permission, open an issue.
