@@ -134,7 +134,8 @@ export function App() {
     const id = setTimeout(() => { try { localStorage.setItem(SESSION_KEY, snapshot); } catch { /* the explicit save reports storage problems */ } }, 600);
     return () => clearTimeout(id);
   }, [snapshot]);
-  useEffect(() => { history.replaceState(null, '', `#/t/${encodeURIComponent(theme.id)}`); }, [theme.id]);
+  // Keep the address bar clean: an incoming #/t/<theme> link is honoured above, then dropped.
+  useEffect(() => { if (location.hash) history.replaceState(null, '', location.pathname + location.search); }, [theme.id]);
   useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(null), toast.action ? 7000 : 3500); return () => clearTimeout(id); }, [toast]);
   const say = (text, action) => setToast({text, action});
 
