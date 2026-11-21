@@ -45,13 +45,21 @@ export const collections=[
  ].map(([n,c],i)=>make('flower-'+i,n,['Daisy','Cherry Blossom','Rose','Lavender','Hydrangea','Sunflower','Camellia','Lily of the Valley'][i],'garden','从花的颜色出发，调出属于自己的春天。',c))},
  {id:'blank',name:'空白创作',short:'空白',en:'Your Own',tab:'Blank',items:[make('blank','留白，给想象','Blank Roll','blank','画一笔，贴一朵花，或者带上你自己的图案。',['#e9ded2','#b5a0af','#ffdfb2'])]},
 ];
-export const allThemes=collections.flatMap(c=>c.items);
 
 // Each preset opens in a contemporary look with a bold palette; the original
 // watercolour palette stays available as the "classic" look. IDs never change.
 export const pops=[['#2b50ff','#0a1a8c','#ff9bd6'],['#ff9ec7','#161616','#ffffff'],['#ffb347','#f0451a','#e9c9ff'],['#1f6b3a','#0b2a17','#f4ffb8'],['#f3f0e8','#e0312b','#2b50ff'],['#e8ff4f','#2b50ff','#ff4fa3'],['#c9b8ff','#3a1f8c','#fff06a'],['#a8e0ff','#0a3d8c','#ff6a3d'],['#161616','#ff4fa3','#e8ff4f'],['#ffd9e8','#d1123f','#ffffff']];
 const looks=['dreamy','stitch','symbol'];
-allThemes.forEach((t,i)=>{t.classicColors=t.colors;if(t.id==='blank'){t.look='classic';return;}t.look=looks[i%3];t.colors=pops[(i*7)%pops.length];});
+// Looks and palettes are dealt out in the original order, so reordering the
+// library below never changes what a tape looks like.
+collections.flatMap(c=>c.items).forEach((t,i)=>{t.classicColors=t.colors;if(t.id==='blank'){t.look='classic';return;}t.look=looks[i%3];t.colors=pops[(i*7)%pops.length];});
+const byId=id=>collections.flatMap(c=>c.items).find(t=>t.id===id);
+// Spring Garden in acid yellow is the first thing a new visitor sees; Dunes at
+// Dusk takes its old sky blue so the two yellows don't sit side by side.
+[byId('garden').colors,byId('desert').colors]=[pops[5],pops[7]];
+// Koi Stream moves to the back of Places, so Spring Garden opens the library.
+const places=collections[0].items;places.push(...places.splice(places.findIndex(t=>t.id==='stream'),1));
+export const allThemes=collections.flatMap(c=>c.items);
 
 // Indices into the original 6×6 motif atlas; -1 means animated koi.
 export function motifFor(id){
