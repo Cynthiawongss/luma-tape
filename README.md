@@ -57,11 +57,7 @@ npm run build
 
 ## Publish
 
-The public site is served by GitHub Pages from the `gh-pages` branch. Pushing to `main` does not publish. To publish the current checkout:
-
-```sh
-./scripts/deploy-pages.sh
-```
+Every push to `main` runs the tests, builds the site and publishes it to GitHub Pages (see `.github/workflows/pages.yml`). If the tests or the build fail, the live site stays on the previous version.
 
 ## How it is built
 

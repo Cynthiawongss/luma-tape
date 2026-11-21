@@ -57,11 +57,7 @@ npm run build
 
 ## 发布
 
-公开网站由 GitHub Pages 从 `gh-pages` 分支提供。推送到 `main` 不会发布。发布当前代码：
-
-```sh
-./scripts/deploy-pages.sh
-```
+每次推送到 `main` 都会自动跑测试、构建并发布到 GitHub Pages（见 `.github/workflows/pages.yml`）。测试或构建失败时，线上保持上一个版本。
 
 ## 技术构成
 
